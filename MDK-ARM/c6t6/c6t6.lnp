@@ -1,5 +1,6 @@
 --cpu Cortex-M3
 "c6t6\startup_stm32f103x6.o"
+"c6t6\w25qxx.o"
 "c6t6\main.o"
 "c6t6\gpio.o"
 "c6t6\freertos.o"
@@ -8,7 +9,6 @@
 "c6t6\stm32f1xx_it.o"
 "c6t6\stm32f1xx_hal_msp.o"
 "c6t6\stm32f1xx_hal_timebase_tim.o"
-"c6t6\w25qxx.o"
 "c6t6\stm32f1xx_hal_gpio_ex.o"
 "c6t6\stm32f1xx_hal.o"
 "c6t6\stm32f1xx_hal_rcc.o"
@@ -35,6 +35,9 @@
 "c6t6\cmsis_os.o"
 "c6t6\heap_4.o"
 "c6t6\port.o"
+"c6t6\sfud.o"
+"c6t6\sfud_sfdp.o"
+"c6t6\sfud_port.o"
 --library_type=microlib --strict --scatter "c6t6\c6t6.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

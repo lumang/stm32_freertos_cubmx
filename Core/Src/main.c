@@ -29,6 +29,7 @@
 #include<stdio.h>
 #include<string.h>
 #include"timers.h"//定时器
+#include "sfud.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,7 +65,45 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+// 系统自检 
+void SystemCheck(void)
+{
+  // 灯光闪烁3次
+  for(i=0;i<3;i++)
+  {
+    HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
+    printf("SystemCheck %d \r\n",i);
+    HAL_Delay(5000);
+  }
+}
+// sfud测试
+void es(void) {
+  printf("擦除一个扇区数据\r\n");
+  const sfud_flash* flash = sfud_get_device(0);
+  sfud_erase(flash, 0, 4096);
+}
+void ws(void) {
+  printf("写入数据\r\n");
+  const sfud_flash* flash = sfud_get_device(0);
+  uint8_t buff[100] = {0};
+  for (uint8_t i = 0; i < 100; i++) {
+      buff[i] = i;
+  }
+  sfud_erase_write(flash, 0, 100, buff);
+}
+void rs(void) {
+  printf("读取数据\r\n");
+  const sfud_flash* flash = sfud_get_device(0);
+  uint8_t buff[100] = {0};
+  sfud_read(flash, 0, 100, buff);
+  for (uint8_t i = 0; i < 100; i++) {
+      printf("%d ", buff[i]);
+      if (i % 10 == 0) {
+          printf("\r\n");
+      }
+  }
+}
+// sfud测试
 /* USER CODE END 0 */
 
 /**
@@ -99,6 +138,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  sfud_init(); // sfud初始化
+  SystemCheck();// 系统自检
+  #if 0
 	//W25QXX cubemx blog
 	//https://blog.csdn.net/lwb450921/article/details/124695575
 	printf("spi w25qxx example\r\n");
@@ -129,10 +171,11 @@ int main(void)
 	/*-Step3- 写数据  ************************************************Step3*/	
 	for(i =0;i<0x100;i ++)
 	{
-			wData[i] = i;
-            rData[i] = 0;
+			wData[i] = i;//写入数据
+            rData[i] = 0; //清零
 	}
-	
+	//
+	//  写入数据
 	if(BSP_W25Qx_Write(wData,0x00,0x100)== W25Qx_OK)
 		printf(" QSPI Write OK!\r\n");
 	else
@@ -152,6 +195,10 @@ int main(void)
 		printf(" W25Q64FV QuadSPI Test OK\r\n");
 	else
 		printf(" W25Q64FV QuadSPI Test False\r\n");
+    #endif
+    es();
+    ws();
+    rs();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */

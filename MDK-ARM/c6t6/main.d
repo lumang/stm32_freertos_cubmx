@@ -49,3 +49,9 @@ c6t6\main.o: ../Core/Inc/gpio.h
 c6t6\main.o: ../Core/Inc/W25Qxx.h
 c6t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 c6t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+c6t6\main.o: ../Middlewares/Third_Party/SFUD/sfud/inc/sfud.h
+c6t6\main.o: ../Middlewares/Third_Party/SFUD/sfud/inc/sfud_def.h
+c6t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+c6t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+c6t6\main.o: ../Middlewares/Third_Party/SFUD/sfud/inc/sfud_cfg.h
+c6t6\main.o: ../Middlewares/Third_Party/SFUD/sfud/inc/sfud_flash_def.h

@@ -6,9 +6,9 @@
 #include "spi.h"
 	 
 #define W25Q128FV_FLASH_SIZE                  0x1000000 /* 128 MBits => 16MBytes */
-#define W25Q128FV_SECTOR_SIZE                 0x10000   /* 256 sectors of 64KBytes */
-#define W25Q128FV_SUBSECTOR_SIZE              0x1000    /* 4096 subsectors of 4kBytes */
-#define W25Q128FV_PAGE_SIZE                   0x100     /* 65536 pages of 256 bytes */
+#define W25Q128FV_SECTOR_SIZE                 0x10000   /* 256 sectors of 64KBytes 扇区*/
+#define W25Q128FV_SUBSECTOR_SIZE              0x1000    /* 4096 subsectors of 4kBytes 子扇区 */
+#define W25Q128FV_PAGE_SIZE                   0x100     /* 65536 pages of 256 bytes 页*/
  
 #define W25Q128FV_DUMMY_CYCLES_READ           4
 #define W25Q128FV_DUMMY_CYCLES_READ_QUAD      10
