@@ -101,9 +101,9 @@ uint8_t BSP_W25Qx_Read(uint8_t* pData, uint32_t ReadAddr, uint32_t Size)
  
 	/* Configure the command */
 	cmd[0] = READ_CMD;
-	cmd[1] = (uint8_t)(ReadAddr >> 16);
-	cmd[2] = (uint8_t)(ReadAddr >> 8);
-	cmd[3] = (uint8_t)(ReadAddr);
+	cmd[1] = (uint8_t)(ReadAddr >> 16);// 高8位地址
+	cmd[2] = (uint8_t)(ReadAddr >> 8);// 中8位地址
+	cmd[3] = (uint8_t)(ReadAddr);// 低8位地址
 	
 	W25Qx_Enable();
 	/* Send the read ID command */

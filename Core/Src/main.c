@@ -28,6 +28,7 @@
 #include"W25Qxx.h"
 #include<stdio.h>
 #include<string.h>
+#include"timers.h"//定时器
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,6 +99,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+	//W25QXX cubemx blog
+	//https://blog.csdn.net/lwb450921/article/details/124695575
 	printf("spi w25qxx example\r\n");
 	HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,GPIO_PIN_RESET);// 点亮
   /*-Step1- 验证设备ID  ************************************************Step1*/ 
@@ -105,11 +108,11 @@ int main(void)
 	BSP_W25Qx_Read_ID(ID);
     //第一位厂商ID固定0xEF,第二位设备ID根据容量不同,具体为：
      //W25Q16为0x14、32为0x15、40为0x12、64为0x16、80为0x13、128为0x17
-	if((ID[0] != 0xEF) | (ID[1] != 0x16)) 
+	if((ID[0] != 0xEF) | (ID[1] != 0x17)) 
 	{                                
 		printf("something wrong in Step1 \r\n");
 	}
-	else
+	// printer ID info
 	{
 		printf(" W25Qxx ID is : ");
 		for(i=0;i<2;i++)
@@ -149,7 +152,7 @@ int main(void)
 		printf(" W25Q64FV QuadSPI Test OK\r\n");
 	else
 		printf(" W25Q64FV QuadSPI Test False\r\n");
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */
   MX_FREERTOS_Init();

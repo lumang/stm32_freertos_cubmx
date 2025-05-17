@@ -48,10 +48,11 @@
 /* USER CODE BEGIN Variables */
  xQueueHandle xQueuePrint;// 消息队列句柄
  static char pcToPrint[80];
+ osThreadId myTaskPrintHandle ;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId myTaskLEDHandle;
-osThreadId myTaskPrintHandle;
+osTimerId myTimer01Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -60,11 +61,15 @@ void printTask(void  const*para);
 
 void StartDefaultTask(void const * argument);
 void StartTaskLED(void const * argument);
+void Callback01(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
+
+/* GetTimerTaskMemory prototype (linked to static allocation support) */
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize );
 
 /* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
 static StaticTask_t xIdleTaskTCBBuffer;
@@ -77,7 +82,25 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
   *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
   /* place for user code */
 }
+void vTimerCallback(TimerHandle_t xTimer1)
+{
+	sprintf(pcToPrint,"Hello FreeRTOS! timer1\r\n");
+	xQueueSend(xQueuePrint,pcToPrint,portMAX_DELAY);
+}
 /* USER CODE END GET_IDLE_TASK_MEMORY */
+
+/* USER CODE BEGIN GET_TIMER_TASK_MEMORY */
+static StaticTask_t xTimerTaskTCBBuffer;
+static StackType_t xTimerStack[configTIMER_TASK_STACK_DEPTH];
+
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize )
+{
+  *ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
+  *ppxTimerTaskStackBuffer = &xTimerStack[0];
+  *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
+  /* place for user code */
+}
+/* USER CODE END GET_TIMER_TASK_MEMORY */
 
 /**
   * @brief  FreeRTOS initialization
@@ -97,8 +120,16 @@ void MX_FREERTOS_Init(void) {
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
+  /* Create the timer(s) */
+  /* definition and creation of myTimer01 */
+  osTimerDef(myTimer01, Callback01);
+  myTimer01Handle = osTimerCreate(osTimer(myTimer01), osTimerPeriodic, NULL);
+  
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
+  //  xTimer = xTimerCreate("Timer", 1000 / portTICK_PERIOD_MS, pdTRUE, (void *) 0, vTimerCallback);// 创建一个定时器，定时器周期为1000ms，定时器模式为周期性定时器
+  //xTimerStart(myTimer01Handle, 0);// 启动定时器
+   osTimerStart(myTimer01Handle,1000);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -165,6 +196,15 @@ void StartTaskLED(void const * argument)
 		xQueueSendToBack(xQueuePrint,pcToPrint,0);
   }
   /* USER CODE END StartTaskLED */
+}
+
+/* Callback01 function */
+void Callback01(void const * argument)
+{
+  /* USER CODE BEGIN Callback01 */
+		sprintf(pcToPrint,"Hello FreeRTOS! timer1\r\n");
+	  xQueueSend(xQueuePrint,pcToPrint,portMAX_DELAY);
+  /* USER CODE END Callback01 */
 }
 
 /* Private application code --------------------------------------------------*/
