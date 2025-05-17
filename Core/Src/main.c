@@ -34,7 +34,14 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+#pragma pack(push, 1) // 禁用结构体填充
+typedef struct {
+    char date[11];      // 日期：YYYY-MM-DD
+    char time[9];       // 时间：HH:MM:SS
+    char type[8];       // 类型：INFO/WARN/ERROR
+    char content[128];  // 日志内容
+} LogEntry;
+#pragma pack(pop)      // 恢复默认填充
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -43,6 +50,12 @@ uint8_t wData[0x100];// 写
 uint8_t rData[0x100];// 读
 uint8_t ID[4];// dev_id
 uint32_t i;
+#define MAX_LOG_ENTRIES 10 // 不能太大 报错 c6t6\c6t6.axf: Error: L6406E: No space in execution regions with .ANY selector matching main.o(.bss).
+LogEntry logs[MAX_LOG_ENTRIES];
+uint16_t log_count = 0;
+sfud_flash *flash = NULL;
+uint32_t log_write_addr = 0x0000; // 初始写入地址
+#define SFUD_W25Q64_SECTOR_SIZE 4096
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -103,7 +116,286 @@ void rs(void) {
       }
   }
 }
+const uint32_t LOG_START_ADDR = 0x000000; // 日志存储起始地址
+#define MAX_LOGS        6000    // 最大日志条目数
 // sfud测试
+//从Flash读取所有日志到内存
+// 检查条目是否为空（全0xFF）
+bool is_entry_empty(const LogEntry *entry) {
+    const uint8_t *bytes = (const uint8_t *)entry;
+    for (size_t i = 0; i < sizeof(LogEntry); i++) {
+        if (bytes[i] != 0xFF) return false;
+    }
+    return true;
+}
+void log_read_all() {
+    if (flash == NULL) {
+        printf("[ERROR] Flash设备未初始化!\n");
+        return;
+    }
+
+    uint32_t addr = LOG_START_ADDR;
+    log_count = 0;
+
+    while (addr < flash->chip.capacity && log_count < 2) {
+        LogEntry entry;
+        sfud_err result = sfud_read(flash, addr, sizeof(LogEntry), (uint8_t *)&entry);
+
+        if (result != SFUD_SUCCESS) {
+            printf("[ERROR] 地址0x%08X读取失败: %d\n", addr, result);
+            addr += sizeof(LogEntry);
+            continue;
+        }
+
+        // 调试输出原始数据（可选）
+        // printf("读取地址: 0x%08X, 日期: %s, 类型: %s\n", addr, entry.date, entry.type);
+
+        if (!is_entry_empty(&entry)) {
+            // 检查字符串终止符
+            entry.date[sizeof(entry.date) - 1] = '\0';
+            entry.time[sizeof(entry.time) - 1] = '\0';
+            entry.type[sizeof(entry.type) - 1] = '\0';
+            entry.content[sizeof(entry.content) - 1] = '\0';
+
+            // 拷贝到内存
+            memcpy(&logs[log_count], &entry, sizeof(LogEntry));
+            log_count++;
+        }
+
+        addr += sizeof(LogEntry);
+    }
+
+    printf("成功读取 %d 条日志\n", log_count);
+}
+
+// 调试函数：打印第一条日志内容
+void debug_first_log() {
+    if (log_count == 0) {
+        printf("无有效日志!\n");
+        return;
+    }
+
+    printf("第一条日志内容:\n");
+    printf("日期: %s\n", logs[0].date);
+    printf("时间: %s\n", logs[0].time);
+    printf("类型: %s\n", logs[0].type);
+    printf("内容: %s\n", logs[0].content);
+}
+void log_init() {
+    // 初始化 SFUD
+    sfud_init();
+    flash = sfud_get_device(0);
+
+    // 检查 Flash 是否支持擦除和写入
+    //assert(flash != NULL && sfud_is_available(flash));
+    
+    // 从 Flash 读取上次的写入地址（需持久化存储，此处简化）
+    // 实际项目中可将 log_write_addr 存储在 Flash 的固定位置
+}
+void log_erase_sector(uint32_t addr) {
+    sfud_err result = sfud_erase(flash, addr, SFUD_W25Q64_SECTOR_SIZE);
+	  printf("0 成功 erase sucess %d\n",result);
+    //assert(result == SFUD_SUCCESS);
+}
+void log_write_entry(LogEntry *entry) {
+    // 初始化缓冲区为全 0xFF
+    uint8_t buffer[sizeof(LogEntry)];
+    memset(buffer, 0xFF, sizeof(buffer));
+    
+    // 拷贝有效数据到缓冲区
+    memcpy(buffer, entry, sizeof(LogEntry));
+    
+    // 写入 Flash
+    sfud_err result = sfud_write(flash, log_write_addr, sizeof(buffer), buffer);
+    if (result != SFUD_SUCCESS) {
+        printf("Error writing log to Flash at 0x%08X\n", log_write_addr);
+        return;
+    }
+    
+    // 更新写入地址
+    log_write_addr += sizeof(LogEntry);
+}
+
+#if 0
+void log_read_all() {
+    uint32_t addr = 0;
+    log_count = 0;
+
+    while (addr < log_write_addr && log_count < MAX_LOG_ENTRIES) {
+        // 从 Flash 读取一条日志
+        sfud_read(flash, addr, sizeof(LogEntry), (uint8_t *)&logs[log_count]);
+        
+        // 跳过未写入区域（全 0xFF）
+        if (logs[log_count].date[0] != 0xFF) {
+            log_count++;
+        }
+        addr += sizeof(LogEntry);
+    }
+}
+#endif 
+//#define MAX_LOG_ENTRIES 1000  // 最大日志条目数
+//LogEntry logs[MAX_LOG_ENTRIES];
+//uint16_t log_count = 0;       // 实际读取的日志数量
+#include <stdbool.h>
+
+// 检查条目是否为空（全 0xFF）
+bool is_entry_empty2(const LogEntry *entry) {
+    const uint8_t *bytes = (const uint8_t *)entry;
+    for (size_t i = 0; i < sizeof(LogEntry); i++) {
+        if (bytes[i] != 0xFF) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void log_read_all2() {
+    uint32_t addr = 0x000000; // 日志存储起始地址
+    log_count = 0;            // 重置计数器
+    
+    // 遍历日志存储区域
+    while (addr < log_write_addr && log_count < MAX_LOG_ENTRIES) {
+        // 从 Flash 读取一条日志
+        sfud_err result = sfud_read(flash, addr, sizeof(LogEntry), (uint8_t *)&logs[log_count]);
+        if (result != SFUD_SUCCESS) {
+            printf("Error reading log at 0x%08X\n", addr);
+            addr += sizeof(LogEntry); // 跳过错误条目
+            continue;
+        }
+        
+        // 仅统计非空条目
+        if (!is_entry_empty(&logs[log_count])) {
+            log_count++;
+        }
+        
+        // 移动到下一个日志位置
+        addr += sizeof(LogEntry);
+    }
+    
+    printf("Total logs read: %d\n", log_count);
+}
+void filter_logs(const char *selected_date, const char *selected_type) {
+    //lv_list_clean(log_list); // 清空当前列表
+    printf("\r\n--- Filtered Logs (Date: %s, Type: %s) ---\r\n", selected_date, selected_type);
+    
+    for (int i = 0; i < log_count; i++) {
+        bool date_match = (strcmp(selected_date, "All") == 0) || 
+                          (strcmp(logs[i].date, selected_date) == 0);
+        bool type_match = (strcmp(selected_type, "All") == 0) || 
+                          (strcmp(logs[i].type, selected_type) == 0);
+        
+        if (date_match && type_match) {
+            // 显示到 LVGL 列表
+            //lv_obj_t *entry = lv_list_add_btn(log_list, NULL, "");
+            //lv_obj_t *label = lv_label_create(entry, NULL);
+            //lv_label_set_text_fmt(label, "[%s][%s] %s", 
+            //                      logs[i].date, logs[i].type, logs[i].content);
+            
+            // 输出到串口
+            printf("[%s][%s] %s\r\n", 
+                   logs[i].date, logs[i].type, logs[i].content);
+        }
+    }
+    printf("--- End of Logs ---\r\n");
+}
+void log_write_and_refresh(LogEntry *entry) {
+    log_write_entry(entry);      // 写入新日志
+    log_read_all();              // 重新读取日志
+    filter_logs("All", "All");   // 刷新界面显示
+}
+// 打印第一条日志的原始字节（十六进制）
+void debug_log_entry(const LogEntry *entry) {
+    const uint8_t *bytes = (const uint8_t *)entry;
+    printf("Raw data of LogEntry:\r\n");
+    for (size_t i = 0; i < sizeof(LogEntry); i++) {
+        printf("%02X ", bytes[i]);
+        if ((i + 1) % 16 == 0) printf("\r\n");
+    }
+    printf("\r\n");
+}
+
+// 在 log_read_and_print 中调用
+//debug_log_entry(&logs[0]);
+void test_log_read() {
+    // 清空日志存储区
+    log_write_addr = 0x000000;
+    sfud_erase(flash, 0x000000, SFUD_W25Q64_SECTOR_SIZE);
+    
+    // 写入有效日志
+    LogEntry entry1 = {
+        .date = "2023-10-01",
+        .time = "12:00:00",
+        .type = "INFO",
+        .content = "System started."
+    };
+    log_write_entry(&entry1);
+    
+    // 写入一个空条目（全 0xFF）
+    LogEntry entry2;
+    memset(&entry2, 0xFF, sizeof(LogEntry));
+    log_write_entry(&entry2);
+    
+    // 读取日志
+    log_read_all();
+    // 在 log_read_and_print 中调用  可以使用
+    debug_log_entry(&logs[0]);
+		printf("Test fields:\r\n");
+    printf("date:  %s (len=%d)\r\n", logs[0].date, strlen(logs[0].date));
+    printf("type:  %s (len=%d)\r\n", logs[0].type, strlen(logs[0].type));
+    printf("content:  %s (len=%d)\r\n", logs[0].content, strlen(logs[0].content));
+    // 验证结果
+    if (log_count == 1 && strcmp(logs[0].date, "2023-10-01") == 0) {
+        printf("Test passed: 1 valid log found.\n");
+			// 输出到串口
+        printf("test [%s][%s] %s \r\n", logs[0].date, logs[0].type, logs[0].content);
+    } else {
+        printf("Test failed: Expected 1 log, found %d.\n", log_count);
+    }
+}
+uint32_t log_start_addr = 0x000000; // 日志存储起始地址
+void log_read_and_print() {
+    uint32_t addr = log_start_addr;
+    log_count = 0;
+
+    // 读取所有日志到内存
+    while (addr < flash->chip.capacity && log_count < MAX_LOG_ENTRIES) {
+        sfud_read(flash, addr, sizeof(LogEntry), (uint8_t *)&logs[log_count]);
+        
+        if (!is_entry_empty(&logs[log_count])) {
+            log_count++;
+        }
+        addr += sizeof(LogEntry);
+    }
+
+    // 通过串口格式化输出
+    printf("\r\n--- Log Entries (Total: %d) ---\r\n", log_count);
+    for (int i = 0; i < log_count; i++) {
+        printf("[%s %s][%s] %s\r\n", 
+               logs[i].date, 
+               logs[i].time, 
+               logs[i].type, 
+               logs[i].content);
+    }
+    printf("--- End of Logs ---\r\n");
+}
+void log_read_and_print2() {
+    uint32_t addr = log_start_addr;
+    LogEntry entry;
+
+    printf("\r\n--- Log Entries ---\r\n");
+    while (addr < flash->chip.capacity) {
+        sfud_read(flash, addr, sizeof(LogEntry), (uint8_t *)&entry);
+        
+        if (!is_entry_empty(&entry)) {
+            printf("[%s %s][%s] %s\r\n", 
+                   entry.date, entry.time, entry.type, entry.content);
+        }
+        addr += sizeof(LogEntry);
+    }
+    printf("--- End of Logs ---\r\n");
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -138,8 +430,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  sfud_init(); // sfud初始化
-  SystemCheck();// 系统自检
+  //sfud_init(); // sfud初始化
+  //SystemCheck();// 系统自检
   #if 0
 	//W25QXX cubemx blog
 	//https://blog.csdn.net/lwb450921/article/details/124695575
@@ -196,9 +488,45 @@ int main(void)
 	else
 		printf(" W25Q64FV QuadSPI Test False\r\n");
     #endif
-    es();
+    #if 0
+		es();
     ws();
     rs();
+		#endif 
+		log_init();//  初始化
+		#if 0
+		 // 模拟写入一条新日志
+    LogEntry new_log;
+    strncpy(new_log.date, "2023-10-01", sizeof(new_log.date));
+    strncpy(new_log.time, "12:05:00", sizeof(new_log.time));
+    strncpy(new_log.type, "INFO", sizeof(new_log.type));
+    strncpy(new_log.content, "Sensor data: 25.3°C", sizeof(new_log.content));
+		//log_write_and_refresh(&new_log);
+		//log_read_all();              // 重新读取日志
+    //filter_logs("All", "All");   // 刷新界面显示
+		test_log_read();
+		  
+    // 读取日志
+    log_read_all();
+    
+    // 验证结果
+    if (log_count == 1 && strcmp(logs[0].date, "2023-10-01") == 0) {
+        printf("Test passed: 1 valid log found.\n");
+			// 输出到串口
+            printf("test [%s][%s] %s \r\n", logs[0].date, logs[0].type, logs[0].content);
+    } else {
+        printf("Test failed: Expected 1 log, found %d.\n", log_count);
+    }
+		#endif 
+		//og_read_and_print2();
+		//test_log_read();  // 正常输出
+		 // 读取日志到内存
+    log_read_all();
+
+    // 调试输出
+    debug_first_log();
+
+		rs();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */
