@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include<stdio.h>
 #include"queue.h"
+#include"SEGGER_RTT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -193,6 +194,8 @@ void StartTaskLED(void const * argument)
 		cnt = xTaskGetTickCount()-xFirstTime;
 		sprintf(pcToPrint,"task 1 %3d  cnt\r\n",cnt);// 
 		printf("led flash\n");
+		SEGGER_RTT_printf(0,pcToPrint);
+		SEGGER_RTT_printf(0, "Hello, SEGGER RTT! led flash\r\n");
 		xQueueSendToBack(xQueuePrint,pcToPrint,0);
   }
   /* USER CODE END StartTaskLED */
@@ -216,6 +219,10 @@ void Callback01(void const * argument)
 	{
 		xQueueReceive(xQueuePrint,pcToWrite,portMAX_DELAY);
 		printf("pc print %s\n",pcToWrite);
+		for(int i=0;i<10;i++)
+		{
+			printf("%x\n",pcToWrite[i]);
+		}
 	}
 }
 /* USER CODE END Application */

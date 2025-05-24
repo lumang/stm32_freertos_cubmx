@@ -44,3 +44,7 @@ c6t6\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 c6t6\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 c6t6\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
 c6t6\freertos.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+c6t6\freertos.o: ..\Middlewares\Third_Party\RTT\SEGGER_RTT.h
+c6t6\freertos.o: ..\Middlewares\Third_Party\RTT\SEGGER_RTT_Conf.h
+c6t6\freertos.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+c6t6\freertos.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h

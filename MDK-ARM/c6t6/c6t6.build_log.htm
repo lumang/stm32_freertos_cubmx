@@ -17,38 +17,25 @@ Library Manager: ArmAr.exe V5.06 update 6 (build 750)
 Hex Converter:   FromElf.exe V5.06 update 6 (build 750)
 CPU DLL:         SARMCM3.DLL V5.31.0.0
 Dialog DLL:      DCM.DLL V1.17.3.0
-Target DLL:      CMSIS_AGDI.dll V1.32.6.0
+Target DLL:      Segger\JL2CM3.dll V2.99.38.0
 Dialog DLL:      TCM.DLL V1.46.0.0
  
 <h2>Project:</h2>
-c:\Users\ss\Desktop\c6t6\MDK-ARM\c6t6.uvprojx
-Project File Date:  05/17/2025
+C:\Users\ss\Desktop\c6t6\MDK-ARM\c6t6.uvprojx
+Project File Date:  05/24/2025
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'c6t6'
-compiling W25Qxx.c...
-../Core/Inc/W25Qxx.h(95): warning:  #1-D: last line of file ends without a newline
-  #endif 
-..\Core\Src\W25Qxx.c(259): warning:  #1-D: last line of file ends without a newline
-   
-..\Core\Src\W25Qxx.c: 2 warnings, 0 errors
-compiling sfud_port.c...
-..\Middlewares\Third_Party\SFUD\sfud\port\sfud_port.c(46): warning:  #177-D: variable "send_data"  was declared but never referenced
-      uint8_t send_data, read_data;
-..\Middlewares\Third_Party\SFUD\sfud\port\sfud_port.c(46): warning:  #177-D: variable "read_data"  was declared but never referenced
-      uint8_t send_data, read_data;
-..\Middlewares\Third_Party\SFUD\sfud\port\sfud_port.c(67): warning:  #177-D: function "qspi_read"  was declared but never referenced
-  static sfud_err qspi_read(const struct __sfud_spi *spi, uint32_t addr, sfud_qspi_read_cmd_format *qspi_read_cmd_format,
-..\Middlewares\Third_Party\SFUD\sfud\port\sfud_port.c: 3 warnings, 0 errors
+compiling freertos.c...
 compiling main.c...
 ../Core/Inc/W25Qxx.h(95): warning:  #1-D: last line of file ends without a newline
   #endif 
 ../Core/Src/main.c: 1 warning, 0 errors
 linking...
-Program Size: Code=25276 RO-data=2948 RW-data=296 ZI-data=7168  
+Program Size: Code=16932 RO-data=456 RW-data=164 ZI-data=7860  
 FromELF: creating hex file...
-"c6t6\c6t6.axf" - 0 Error(s), 6 Warning(s).
+"c6t6\c6t6.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -72,7 +59,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.4.0
       Include file:  CMSIS\Core\Include\tz_context.h
-Build Time Elapsed:  00:00:05
+Build Time Elapsed:  00:00:04
 </pre>
 </body>
 </html>

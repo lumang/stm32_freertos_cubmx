@@ -30,6 +30,8 @@
 #include<string.h>
 #include"timers.h"//定时器
 #include "sfud.h"
+#include<assert.h>
+#include"SEGGER_RTT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,10 +54,10 @@ uint8_t ID[4];// dev_id
 uint32_t i;
 #define MAX_LOG_ENTRIES 10 // 不能太大 报错 c6t6\c6t6.axf: Error: L6406E: No space in execution regions with .ANY selector matching main.o(.bss).
 LogEntry logs[MAX_LOG_ENTRIES];
-uint16_t log_count = 0;
-sfud_flash *flash = NULL;
+uint16_t log_count = 0; // 日志计数器
+sfud_flash *flash = NULL;//  sfud 设备对象
 uint32_t log_write_addr = 0x0000; // 初始写入地址
-#define SFUD_W25Q64_SECTOR_SIZE 4096
+#define SFUD_W25Q64_SECTOR_SIZE 4096 // SFUD W25Q64 扇区大小
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -432,6 +434,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   //sfud_init(); // sfud初始化
   //SystemCheck();// 系统自检
+	SEGGER_RTT_Init();// Init rtt tools
   #if 0
 	//W25QXX cubemx blog
 	//https://blog.csdn.net/lwb450921/article/details/124695575
@@ -493,7 +496,8 @@ int main(void)
     ws();
     rs();
 		#endif 
-		log_init();//  初始化
+		//log_init();//  初始化
+		SEGGER_RTT_printf(0,"HELLO SEGGER RTT\r\n");
 		#if 0
 		 // 模拟写入一条新日志
     LogEntry new_log;
@@ -518,15 +522,15 @@ int main(void)
         printf("Test failed: Expected 1 log, found %d.\n", log_count);
     }
 		#endif 
-		//og_read_and_print2();
+		//log_read_and_print2();
 		//test_log_read();  // 正常输出
 		 // 读取日志到内存
-    log_read_all();
+    //log_read_all();
 
     // 调试输出
-    debug_first_log();
+    //debug_first_log();
 
-		rs();
+		//rs();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */

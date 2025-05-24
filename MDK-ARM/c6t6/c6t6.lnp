@@ -38,6 +38,8 @@
 "c6t6\sfud.o"
 "c6t6\sfud_sfdp.o"
 "c6t6\sfud_port.o"
+"c6t6\segger_rtt.o"
+"c6t6\segger_rtt_printf.o"
 --library_type=microlib --strict --scatter "c6t6\c6t6.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

@@ -55,3 +55,7 @@ c6t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 c6t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 c6t6\main.o: ../Middlewares/Third_Party/SFUD/sfud/inc/sfud_cfg.h
 c6t6\main.o: ../Middlewares/Third_Party/SFUD/sfud/inc/sfud_flash_def.h
+c6t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+c6t6\main.o: ..\Middlewares\Third_Party\RTT\SEGGER_RTT.h
+c6t6\main.o: ..\Middlewares\Third_Party\RTT\SEGGER_RTT_Conf.h
+c6t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
